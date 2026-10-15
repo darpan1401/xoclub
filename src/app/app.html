@@ -1,0 +1,78 @@
+<main class="page-shell">
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="XO Club home"><span class="brand-icon"><b>X</b><b>O</b></span><span>xo<span class="brand-light">club</span></span></a>
+    <div class="local-pill"><span class="live-dot"></span> {{ roomCode() ? 'ROOM ' + roomCode() : 'XO CLUB' }}</div>
+  </header>
+
+  <section class="hero">
+    <div class="eyebrow"><span class="sparkle">✳</span> THE CLASSIC, REIMAGINED</div>
+    <h1>One board.<br><span>Two rivals.</span></h1>
+    <p class="intro">A little friendly competition goes a long way.</p>
+  </section>
+
+  <section class="room-panel" aria-label="Play online with a friend">
+    @if (!roomCode()) {
+      <div class="room-heading"><div><span class="eyebrow">PLAY FROM ANYWHERE</span><h2>Meet in a room.</h2></div><span class="online-badge"><i></i> REAL-TIME</span></div>
+      <div class="room-controls">
+        <label class="room-field name-field"><span>Your name</span><input maxlength="18" [value]="playerName()" (input)="playerName.set($any($event.target).value)" placeholder="Enter your name"></label>
+        <button class="create-room" type="button" [disabled]="isBusy()" (click)="createRoom()">{{ isBusy() ? 'Connecting…' : '＋ Create a room' }}</button>
+        <label class="room-field code-field"><span>Have a code?</span><input maxlength="6" autocomplete="off" [value]="roomCodeInput()" (input)="roomCodeInput.set($any($event.target).value.toUpperCase())" placeholder="6-DIGIT CODE"></label>
+        <button class="join-room" type="button" [disabled]="isBusy()" (click)="joinRoom()">Join room <span>↗</span></button>
+      </div>
+    } @else {
+      <div class="active-room">
+        <div class="active-room-copy"><span class="eyebrow">{{ roomStatus() === 'waiting' ? 'ROOM CREATED · WAITING FOR FRIEND' : roomStatus() === 'finished' ? 'GAME OVER · PLAY ANOTHER ROUND' : 'YOU’RE PLAYING ONLINE' }}</span><strong>{{ roomStatus() === 'waiting' ? 'Share this room code' : nameX() + ' vs ' + nameO() }}</strong></div>
+        <div class="share-code">{{ roomCode() }}</div>
+        <button class="copy-button" type="button" (click)="copyCode()">{{ copied() ? 'Copied ✓' : 'Copy code' }}</button>
+        <button class="leave-button" type="button" (click)="leaveRoom()">Leave</button>
+      </div>
+    }
+    @if (roomMessage()) { <p class="room-message">{{ roomMessage() }}</p> }
+  </section>
+
+  <section class="game-layout" aria-label="Tic tac toe game">
+    <div class="play-area">
+      <div class="game-topline">
+        <div class="round-label"><span class="round-icon">✦</span><span>ROUND <strong>{{ scores().X + scores().O + scores().draws + 1 }}</strong></span></div>
+        <button class="text-button" type="button" (click)="resetMatch()">Reset match <span aria-hidden="true">↺</span></button>
+      </div>
+
+      <div class="turn-card" [class.finished]="roundOver()">
+        <div class="turn-mark" [class.mark-o]="turn() === 'O'">{{ roundOver() && !winningCells().length ? '—' : turn() }}</div>
+        <div class="turn-copy"><span class="turn-caption">{{ roundOver() ? 'ROUND COMPLETE' : 'UP NEXT' }}</span><strong>{{ status() }}</strong></div>
+        @if (!roundOver()) { <span class="turn-pulse"></span> }
+      </div>
+
+      <div class="board" role="grid" aria-label="Tic tac toe board">
+        @for (cell of board(); track $index) {
+          <button class="cell" type="button" role="gridcell"
+            [class.cell-x]="cell === 'X'" [class.cell-o]="cell === 'O'"
+            [class.winner-cell]="winningCells().includes($index)"
+            [attr.aria-label]="cell ? 'Cell ' + ($index + 1) + ': ' + cell : 'Empty cell ' + ($index + 1)"
+            [disabled]="!!cell || roundOver() || (!!roomCode() && (role() !== turn() || roomStatus() !== 'playing'))" (click)="play($index)">
+            @if (cell === 'X') { <span class="x-mark">×</span> }
+            @if (cell === 'O') { <span class="o-mark"></span> }
+            @if (!cell) { <span class="cell-hover">+</span> }
+          </button>
+        }
+      </div>
+
+      <button class="next-button" type="button" (click)="newRound()">
+        <span>{{ roundOver() ? 'Play again' : 'Start a new round' }}</span><span class="button-arrow">↗</span>
+      </button>
+    </div>
+
+    <aside class="side-panel">
+      <div class="score-heading"><div><span class="eyebrow">THE SCOREBOARD</span><h2>Keep it close.</h2></div><span class="trophy">♧</span></div>
+      <div class="score-list">
+        <div class="score-row"><span class="player-symbol x-mark">×</span><span class="player-name">{{ nameX() }}<small>PLAYER X · FIRST MOVE</small></span><strong class="score-number">{{ scores().X }}</strong></div>
+        <div class="score-row"><span class="player-symbol o-mark"></span><span class="player-name">{{ nameO() }}<small>PLAYER O · SECOND MOVE</small></span><strong class="score-number">{{ scores().O }}</strong></div>
+        <div class="score-row draw-row"><span class="draw-symbol">＝</span><span class="player-name">Draws</span><strong class="score-number">{{ scores().draws }}</strong></div>
+      </div>
+      <div class="how-card"><div class="how-icon">✳</div><div><strong>Good games, good vibes.</strong><p>Take turns placing your mark. First to line up three wins the round.</p></div></div>
+      <div class="online-note"><span class="note-icon">⌁</span><div><strong>{{ roomCode() ? 'Room code ' + roomCode() : 'Playing from different places?' }}</strong><p>{{ roomCode() ? 'Your moves sync live. Your friend can join with the code above.' : 'Create a free room above and share the code with your friend.' }}</p></div></div>
+    </aside>
+  </section>
+
+  <footer><span>MADE FOR THE LOVE OF THE GAME</span><span>✳ <b>NO ACCOUNTS. NO FUSS.</b></span></footer>
+</main>
